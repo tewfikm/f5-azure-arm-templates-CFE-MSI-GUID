@@ -673,7 +673,7 @@
         },
         "installCustomConfig": "[concat(variables('singleQuote'), '#!/bin/bash\n', variables('customConfig'), variables('singleQuote'))]",
         "roleAssignementNameForInstance0": "[concat(variables('dnsLabel'), '-', variables('instanceName'), '0-role', uniqueString(parameters('guidValueForInstance0')))]",
-        "roleAssignementNameForInstance1": "[concat(variables('dnsLabel'), '-', variables('instanceName'), '1-role', uniqueString(parameters('guidValueForInstance1')))]"
+        "roleAssignementNameForInstance2": "[concat(variables('dnsLabel'), '-', variables('instanceName'), '1-role', uniqueString(parameters('guidValueForInstance1')))]"
     },
     "resources": [
         {
