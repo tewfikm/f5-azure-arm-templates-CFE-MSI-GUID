@@ -1,6 +1,6 @@
 {
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
-    "contentVersion": "7.4.1.0",
+    "contentVersion": "7.4.1.1",
     "parameters": {
         "adminUsername": {
             "defaultValue": "azureuser",
@@ -279,13 +279,12 @@
             },
             "type": "string"
         },
-        "guidValueForInstance0": {
+        "roleNameGuid": {
             "type": "string",
-            "defaultValue": "[newGuid()]"
-        },
-        "guidValueForInstance1": {
-            "type": "string",
-            "defaultValue": "[newGuid()]"
+            "defaultValue": "[newGuid()]",
+            "metadata": {
+                "description": "A new GUID used to identify the role assignment. Keep the field as is. No need to enter any value here as newGuid() is generating a random "
+                        }
         }
     },
     "variables": {
@@ -672,9 +671,9 @@
             }
         },
         "installCustomConfig": "[concat(variables('singleQuote'), '#!/bin/bash\n', variables('customConfig'), variables('singleQuote'))]",
-        "roleAssignementNameForInstance0": "[concat(variables('dnsLabel'), '-', variables('instanceName'), '0-role', uniqueString(parameters('guidValueForInstance0')))]",
-        "roleAssignementNameForInstance1": "[concat(variables('dnsLabel'), '-', variables('instanceName'), '1-role', uniqueString(parameters('guidValueForInstance1')))]"
-    },
+        "roleAssignementNameForInstance0": "[guid(concat(variables('dnsLabel'), '-', variables('instanceName'), '0-role', parameters('roleNameGuid')))]",
+        "roleAssignementNameForInstance1": "[guid(concat(variables('dnsLabel'), '-', variables('instanceName'), '1-role', parameters('roleNameGuid')))]"
+        },
     "resources": [
         {
             "apiVersion": "[variables('networkApiVersion')]",
@@ -1257,7 +1256,7 @@
         {
             "apiVersion": "[variables('computeApiVersion')]",
             "dependsOn": [
-                "[concat('Microsoft.Authorization/roleAssignments/', guid(concat(variables('dnsLabel'), '-', variables('instanceName'), '0-role')))]"
+                "[concat('Microsoft.Authorization/roleAssignments/', variables('roleAssignementNameForInstance1'))]"
             ],
             "location": "[variables('location')]",
             "name": "[concat(variables('dnsLabel'), '-', variables('instanceName'), '0/start')]",
@@ -1286,7 +1285,7 @@
         {
             "apiVersion": "[variables('computeApiVersion')]",
             "dependsOn": [
-                "[concat('Microsoft.Authorization/roleAssignments/', guid(concat(variables('dnsLabel'), '-', variables('instanceName'), '1-role')))]"
+                "[concat('Microsoft.Authorization/roleAssignments/', variables('roleAssignementNameForInstance1'))]"
             ],
             "location": "[variables('location')]",
             "name": "[concat(variables('dnsLabel'), '-', variables('instanceName'), '1/start')]",

@@ -1,5 +1,12 @@
 # Deploying the BIG-IP VE in Azure - HA Cluster (Active/Standby)
 
+This is a fork of F5 arm templates to solve non random guid Managed Identity Roles issues when deleting resources and redploying using templates.
+Templates fail with error :
+
+RoleAssignmentUpdateNotPermitted
+
+This template is as is and not offcially supported by F5
+
 [![Slack Status](https://f5cloudsolutions.herokuapp.com/badge.svg)](https://f5cloudsolutions.herokuapp.com)
 [![Releases](https://img.shields.io/github/release/f5networks/f5-azure-arm-templates.svg)](https://github.com/f5networks/f5-azure-arm-templates/releases)
 [![Issues](https://img.shields.io/github/issues/f5networks/f5-azure-arm-templates.svg)](https://github.com/f5networks/f5-azure-arm-templates/issues)

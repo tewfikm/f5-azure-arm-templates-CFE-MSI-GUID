@@ -1,6 +1,6 @@
 {
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
-    "contentVersion": "7.4.1.0",
+    "contentVersion": "7.4.1.1",
     "parameters": {
         "adminUsername": {
             "defaultValue": "azureuser",
@@ -277,6 +277,13 @@
                 "description": "A comma-delimited list of route destinations to be managed by this cluster.  For example: 0.0.0.0/0,192.168.1.0/24. Specifying a comma-delimited list of managedRoutes and creating f5_ha and f5_tg tags on the Azure Route Table defines the UDRs to be updated. To have the UDRs managed by BIG-IP, you will need to create an Azure tag with key **f5_ha** and value **self_2nic**, or the name of a different self IP address configured on the BIG-IP VE. All UDRs with destinations matching managedRoutes and configured in Azure Route Tables tagged with 'f5_ha:' will use the corresponding self IP address on the active BIG-IP VE as the next hop for those routes. You must also associate the route table with a traffic group by creating an Azure tag with key **f5_tg** and value **traffic-group-1**, or the name of a different traffic group configured on the BIG-IP VE."
             },
             "type": "string"
+        },
+        "roleNameGuid": {
+            "type": "string",
+            "defaultValue": "[newGuid()]",
+            "metadata": {
+                "description": "A new GUID used to identify the role assignment. Keep the field as is. No need to enter any value here as newGuid() is generating a random "
+                        }
         }
     },
     "variables": {
@@ -711,7 +718,10 @@
                 "linuxConfiguration": "[variables('linuxConfiguration')]"
             }
         },
-        "installCustomConfig": "[concat(variables('singleQuote'), '#!/bin/bash\n', variables('customConfig'), variables('singleQuote'))]"
+        "installCustomConfig": "[concat(variables('singleQuote'), '#!/bin/bash\n', variables('customConfig'), variables('singleQuote'))]",
+        "roleAssignementNameForInstance0": "[guid(concat(variables('dnsLabel'), '-', variables('instanceName'), '0-role', parameters('roleNameGuid')))]",
+        "roleAssignementNameForInstance1": "[guid(concat(variables('dnsLabel'), '-', variables('instanceName'), '1-role', parameters('roleNameGuid')))]"
+
     },
     "resources": [
         {
@@ -1269,7 +1279,7 @@
         {
             "apiVersion": "[variables('authApiVersion')]",
             "type": "Microsoft.Authorization/roleAssignments",
-            "name": "[guid(concat(variables('dnsLabel'), '-', variables('instanceName'), '0-role'))]",
+            "name": "[variables('roleAssignementNameForInstance0')]",
             "properties": {
                 "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
                 "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('dnsLabel'), '-', variables('instanceName'), '0'), variables('computeApiVersion'), 'Full').identity.principalId]",
@@ -1282,7 +1292,7 @@
         {
             "apiVersion": "[variables('authApiVersion')]",
             "type": "Microsoft.Authorization/roleAssignments",
-            "name": "[guid(concat(variables('dnsLabel'), '-', variables('instanceName'), '1-role'))]",
+            "name": "[variables('roleAssignementNameForInstance1')]",
             "properties": {
                 "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
                 "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('dnsLabel'), '-', variables('instanceName'), '1'), variables('computeApiVersion'), 'Full').identity.principalId]",
@@ -1295,7 +1305,7 @@
         {
             "apiVersion": "[variables('computeApiVersion')]",
             "dependsOn": [
-                "[concat('Microsoft.Authorization/roleAssignments/', guid(concat(variables('dnsLabel'), '-', variables('instanceName'), '0-role')))]"
+                "[concat('Microsoft.Authorization/roleAssignments/', variables('roleAssignementNameForInstance0'))]"
             ],
             "location": "[variables('location')]",
             "name": "[concat(variables('dnsLabel'), '-', variables('instanceName'), '0/start')]",
@@ -1324,7 +1334,7 @@
         {
             "apiVersion": "[variables('computeApiVersion')]",
             "dependsOn": [
-                "[concat('Microsoft.Authorization/roleAssignments/', guid(concat(variables('dnsLabel'), '-', variables('instanceName'), '1-role')))]"
+                "[concat('Microsoft.Authorization/roleAssignments/', variables('roleAssignementNameForInstance1'))]"
             ],
             "location": "[variables('location')]",
             "name": "[concat(variables('dnsLabel'), '-', variables('instanceName'), '1/start')]",
